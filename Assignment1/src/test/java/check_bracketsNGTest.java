@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -32,7 +31,7 @@ public class check_bracketsNGTest {
         final Stream<File> fileStream = Arrays.stream(resourcesDirectory.listFiles());
         Map<String, String> fileContents = fileStream.collect(Collectors.toMap(File::getName, file -> {
             try {
-                return Files.readAllLines(file.toPath()).get(0);
+                return new String(Files.readAllBytes(file.toPath())).trim();
             } catch (IOException ex) {
                 Logger.getLogger(check_bracketsNGTest.class.getName()).log(Level.SEVERE, null, ex);
                 return null;

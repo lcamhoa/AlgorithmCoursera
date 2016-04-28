@@ -4,12 +4,10 @@
  * and open the template in the editor.
  */
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Map;
@@ -35,7 +33,7 @@ public class tree_heightNGTest {
         final Stream<File> fileStream = Arrays.stream(resourcesDirectory.listFiles());
         Map<String, String> fileContents = fileStream.collect(Collectors.toMap(File::getName, file -> {
             try {
-                return Files.readAllLines(file.toPath()).get(0);
+                return new String(Files.readAllBytes(file.toPath())).trim();
             } catch (IOException ex) {
                 Logger.getLogger(tree_heightNGTest.class.getName()).log(Level.SEVERE, null, ex);
                 return null;

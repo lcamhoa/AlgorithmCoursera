@@ -42,11 +42,25 @@ public class tree_height {
         int computeHeight() {
             // Replace this code with a faster implementation
             int maxHeight = 0;
+            Map<Integer, Integer> nodeHeights = new HashMap<>();
+            nodeHeights.put(-1, 0);
             for (int vertex = 0; vertex < n; vertex++) {
-                int height = 0;
-                for (int i = vertex; i != -1; i = parent[i]) {
-                    height++;
+                Integer height = null;
+                Deque<Integer> stack = new ArrayDeque<>();
+                int i = vertex;
+                while (height == null) {
+                    height = nodeHeights.get(i);
+                    if (height == null) {
+                        stack.push(i);
+                        i = parent[i];
+                    }
                 }
+                while (!stack.isEmpty()) {
+                    height++;
+                    i = stack.pop();
+                    nodeHeights.put(i, height);
+                }
+                //System.out.printf("Height for vertex %d is %d\n", vertex, height);
                 maxHeight = Math.max(maxHeight, height);
             }
             return maxHeight;
