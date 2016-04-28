@@ -1,4 +1,6 @@
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -25,7 +27,7 @@ class Response {
 class Buffer {
     public Buffer(int size) {
         this.size_ = size;
-        this.finish_time_ = new ArrayList<Integer>();
+        this.finish_time_ = new ArrayList<>();
     }
 
     public Response Process(Request request) {
@@ -33,14 +35,14 @@ class Buffer {
         return new Response(false, -1);
     }
 
-    private int size_;
-    private ArrayList<Integer> finish_time_;
+    private final int size_;
+    private final ArrayList<Integer> finish_time_;
 }
 
 class process_packages {
     private static ArrayList<Request> ReadQueries(Scanner scanner) throws IOException {
         int requests_count = scanner.nextInt();
-        ArrayList<Request> requests = new ArrayList<Request>();
+        ArrayList<Request> requests = new ArrayList<>();
         for (int i = 0; i < requests_count; ++i) {
             int arrival_time = scanner.nextInt();
             int process_time = scanner.nextInt();
@@ -50,32 +52,36 @@ class process_packages {
     }
 
     private static ArrayList<Response> ProcessRequests(ArrayList<Request> requests, Buffer buffer) {
-        ArrayList<Response> responses = new ArrayList<Response>();
+        ArrayList<Response> responses = new ArrayList<>();
         for (int i = 0; i < requests.size(); ++i) {
             responses.add(buffer.Process(requests.get(i)));
         }
         return responses;
     }
 
-    private static void PrintResponses(ArrayList<Response> responses) {
+    private static void PrintResponses(ArrayList<Response> responses, PrintStream outputStream) {
         for (int i = 0; i < responses.size(); ++i) {
             Response response = responses.get(i);
             if (response.dropped) {
-                System.out.println(-1);
+                outputStream.println(-1);
             } else {
-                System.out.println(response.start_time);
+                outputStream.println(response.start_time);
             }
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        Scanner scanner = new Scanner(System.in);
-
+    static void simulatePackageFlow(final InputStream inputStream, PrintStream outputStream) throws IOException {
+        Scanner scanner = new Scanner(inputStream);
+        
         int buffer_max_size = scanner.nextInt();
         Buffer buffer = new Buffer(buffer_max_size);
 
         ArrayList<Request> requests = ReadQueries(scanner);
         ArrayList<Response> responses = ProcessRequests(requests, buffer);
-        PrintResponses(responses);
+        PrintResponses(responses, outputStream);
+    }
+
+    public static void main(String[] args) throws IOException {
+        simulatePackageFlow(System.in, System.out);
     }
 }

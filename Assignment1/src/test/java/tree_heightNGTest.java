@@ -24,9 +24,6 @@ import org.testng.annotations.Test;
  */
 public class tree_heightNGTest {
     
-    public tree_heightNGTest() {
-    }
-
     @Test
     public void testRun() throws Exception {
         File resourcesDirectory = new File("src/test/resources/tree_height");
