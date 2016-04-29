@@ -55,7 +55,7 @@ public class process_packagesNGTest {
                         ByteArrayOutputStream bas = new ByteArrayOutputStream();
                         PrintStream os = new PrintStream(bas);
                         process_packages.simulatePackageFlow(is, os);
-                        result = bas.toString();
+                        result = bas.toString().trim();
                     } catch (IOException ex) {
                         Logger.getLogger(process_packagesNGTest.class.getName()).log(Level.SEVERE, null, ex);
                         result = null;

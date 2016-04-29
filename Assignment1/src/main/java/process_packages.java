@@ -1,7 +1,9 @@
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.Scanner;
 
 class Request {
@@ -27,16 +29,37 @@ class Response {
 class Buffer {
     public Buffer(int size) {
         this.size_ = size;
-        this.finish_time_ = new ArrayList<>();
+        this.finish_time_ = new ArrayDeque<>(size);
     }
 
     public Response Process(Request request) {
         // write your code here
-        return new Response(false, -1);
+        // Be the processor and pop off the packages that 
+        // already have been processed
+        while (finish_time_.peek() != null && finish_time_.peek() <= request.arrival_time) {
+            finish_time_.poll();
+        }
+        if (finish_time_.isEmpty()) {
+            if (request.process_time != 0) {
+                finish_time_.offer(request.arrival_time + request.process_time);
+            }
+            return new Response(false, request.arrival_time);
+        } else {
+            if (finish_time_.size() < size_) {
+                // Queue up the packet. But, first find out the finish time 
+                // based on the last element queued up
+                Integer last_elem = finish_time_.peekLast();
+                finish_time_.offer(last_elem + request.process_time);
+                return new Response(false, last_elem);
+            } else {
+                // Drop the packet
+                return new Response(true, -1);
+            }
+        }
     }
 
     private final int size_;
-    private final ArrayList<Integer> finish_time_;
+    private final Deque<Integer> finish_time_;
 }
 
 class process_packages {
