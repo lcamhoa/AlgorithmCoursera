@@ -1,9 +1,19 @@
 import java.util.*;
 
 public class DifferentSummands {
-    private static List<Integer> optimalSummands(int n) {
-        List<Integer> summands = new ArrayList<Integer>();
-        //write your code here
+    static List<Integer> optimalSummands(int n) {
+        List<Integer> summands = new ArrayList<>();
+        int lowerBound = 1;
+        while (n != 0) {
+            if (n > 2 * lowerBound) {
+                summands.add(lowerBound);
+                n -= lowerBound;
+                lowerBound++;
+            } else {
+                summands.add(n);
+                n = 0;
+            }
+        }
         return summands;
     }
     

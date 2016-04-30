@@ -2,17 +2,33 @@ import java.util.*;
 
 public class CoveringSegments {
 
-    private static int[] optimalPoints(Segment[] segments) {
-        //write your code here
+    static int[] optimalPoints(Segment[] segments) {
         int[] points = new int[2 * segments.length];
-        for (int i = 0; i < segments.length; i++) {
-            points[2 * i] = segments[i].start;
-            points[2 * i + 1] = segments[i].end;
+        int count = 0;
+        Arrays.sort(segments, (Segment s1, Segment s2) -> Integer.compare(s1.start, s2.start));
+        Segment currentIntersection = null;
+        if (segments.length > 0) {
+            currentIntersection = new Segment(segments[0].start, segments[0].end);
         }
-        return points;
+        for (int i = 1; i < segments.length; i++) {
+            if (currentIntersection.start <= segments[i].end && segments[i].start <= currentIntersection.end) {
+                // Update the continuing intersection
+                currentIntersection.start = Math.max(currentIntersection.start, segments[i].start);
+                currentIntersection.end = Math.min(currentIntersection.end, segments[i].end);
+            } else {
+                // we need to select a point from the older intersection and start a new intersection
+                points[count++] = currentIntersection.start;
+                currentIntersection = new Segment(segments[i].start, segments[i].end);
+            }
+        }
+        if ((count == 0 && currentIntersection != null) || points[count-1] != currentIntersection.start) {
+            // process the last intersection
+            points[count++] = currentIntersection.start;
+        }
+        return Arrays.copyOf(points, count);
     }
 
-    private static class Segment {
+    static class Segment {
         int start, end;
 
         Segment(int start, int end) {

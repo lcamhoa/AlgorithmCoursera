@@ -8,7 +8,14 @@ public class FractionalKnapsack {
             if (capacity == 0) {
                 return value;
             }
-            
+            int bestOne = findBest(values, weights);
+            if (bestOne == -1) { // no solution found
+                return -1;
+            }
+            int weightOfItem = Math.min(weights[bestOne], capacity);
+            value += ((double)weightOfItem * values[bestOne]) / weights[bestOne];
+            capacity -= weightOfItem;
+            weights[bestOne] -= weightOfItem;
         }
 
         return value;
@@ -25,5 +32,18 @@ public class FractionalKnapsack {
             weights[i] = scanner.nextInt();
         }
         System.out.println(getOptimalValue(capacity, values, weights));
+    }
+
+    private static int findBest(int[] values, int[] weights) {
+        int bestOne = -1;
+        double bestValueForWeight = -1;
+        final int n = values.length;
+        for (int i = 0; i < n; i++) {
+            if (weights[i] > 0 && values[i] / weights[i] > bestValueForWeight) {
+                bestOne = i;
+                bestValueForWeight = values[i] / weights[i];
+            }
+        }
+        return bestOne;
     }
 } 

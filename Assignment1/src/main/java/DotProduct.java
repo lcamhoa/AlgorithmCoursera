@@ -1,9 +1,16 @@
 import java.util.*;
 
 public class DotProduct {
-    private static long minDotProduct(int[] a, int[] b) {
-        //write your code here
+    static long minDotProduct(int[] a, int[] b) {
         long result = 0;
+        Arrays.sort(a);
+        Arrays.sort(b);
+        // Reverse b so that b now is reverse sorted
+        for (int i = 0; i < b.length/2; i++) {
+            int temp = b[b.length-1-i];
+            b[b.length-1-i] = b[i];
+            b[i] = temp;
+        }
         for (int i = 0; i < a.length; i++) {
             result += a[i] * b[i];
         }
