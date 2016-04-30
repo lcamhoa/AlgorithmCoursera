@@ -1,9 +1,15 @@
 import java.util.Scanner;
 
 public class FractionalKnapsack {
-    private static double getOptimalValue(int capacity, int[] values, int[] weights) {
+    static double getOptimalValue(int capacity, int[] values, int[] weights) {
         double value = 0;
-        //write your code here
+        final int n = values.length;
+        for (int i = 0; i < n; i++) {
+            if (capacity == 0) {
+                return value;
+            }
+            
+        }
 
         return value;
     }

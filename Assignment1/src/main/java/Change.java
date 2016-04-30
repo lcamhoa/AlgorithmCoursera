@@ -1,9 +1,15 @@
 import java.util.Scanner;
 
 public class Change {
-    private static int getChange(int n) {
-        //write your code here
-        return n;
+    private static int[] coins = {10, 5, 1};
+    
+    static int getChange(int n) {
+        int count = 0;
+        for (int i = 0; n > 0 && i < 3; i++) {
+            count += n / coins[i];
+            n = n % coins[i];
+        }
+        return count;
     }
 
     public static void main(String[] args) {
