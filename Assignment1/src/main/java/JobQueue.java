@@ -5,54 +5,40 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 public class JobQueue {
     
-    class JobQueueWorker {
-        int index;
-        long nextFreeTime;
-        
-        void siftDown(int i) {
-            int minIndex = i;
-            final int leftChildIndex = 2*i + 1;
-            if (leftChildIndex < data.size() && data.get(leftChildIndex) < data.get(minIndex)) {
-                minIndex = leftChildIndex;
-            }
-            final int rightChildIndex = 2*i + 2;
-            if (rightChildIndex < data.size() && data.get(rightChildIndex) < data.get(minIndex)) {
-                minIndex = rightChildIndex;
-            }
-            if (i != minIndex) {
-                Collections.swap(data, i, minIndex);
-                siftDown(data, minIndex);
-            }
+    static class JobQueueWorker implements Comparable<JobQueueWorker> {
+        private int index;
+        private long nextFreeTime;
+
+        public JobQueueWorker(int index, long nextFreeTime) {
+            this.index = index;
+            this.nextFreeTime = nextFreeTime;
         }
 
-        void siftUp(int i) {
-            while (i > 0 && data.get((i-1)/2) < data.get(i)) {
-                Collections.swap(data, i, (i-1)/2);
-                i = (i-1)/2;
-            }
+        public void setNextFreeTime(long nextFreeTime) {
+            this.nextFreeTime = nextFreeTime;
         }
 
-    //    private static int extractMin(ArrayList<Integer> data) {
-    //        int max = data.get(0);
-    //        Collections.swap(data, 0, data.size()-1);
-    //        data.remove(data.size()-1);
-    //        siftDown(data, 0);
-    //        return max;
-    //    }
+        public int getIndex() {
+            return index;
+        }
 
-        void changePriority(int i, int newPriority) {
-            int oldPriority = data.get(i);
-            data.set(i, newPriority);
-            if (oldPriority < newPriority) {
-                siftUp(i);
+        public long getNextFreeTime() {
+            return nextFreeTime;
+        }
+
+        @Override
+        public int compareTo(JobQueueWorker t) {
+            int freeTimeCompareResult = Long.compare(nextFreeTime, t.getNextFreeTime());
+            if (freeTimeCompareResult == 0) {
+                return Integer.compare(index, t.getIndex());
             } else {
-                siftDown(i);
+                return freeTimeCompareResult;
             }
         }
-            
     }
 
     public static void main(String[] args) throws IOException {
@@ -75,15 +61,19 @@ public class JobQueue {
 
     static LinkedHashMap<Integer, Long> assignJobs(int numWorkers, List<Integer> jobs) {
         final LinkedHashMap<Integer, Long> output = new LinkedHashMap<>(jobs.size());
-        final long[] nextFreeTime = new long[numWorkers];
+        
+        final TreeSet<JobQueueWorker> heap = new TreeSet<>();
+        // Add all the workers initially
+        for (int j = 0; j < numWorkers; ++j) {
+            heap.add(new JobQueueWorker(j, 0));
+        }
         for (Integer duration : jobs) {
-            int bestWorker = 0;
-            for (int j = 0; j < numWorkers; ++j) {
-                if (nextFreeTime[j] < nextFreeTime[bestWorker])
-                    bestWorker = j;
-            }
-            output.put(bestWorker, nextFreeTime[bestWorker]);
-            nextFreeTime[bestWorker] += duration;
+            JobQueueWorker bestWorker = heap.first();
+            output.put(bestWorker.getIndex(), bestWorker.getNextFreeTime());
+            // Update the heap
+            heap.remove(bestWorker);
+            bestWorker.setNextFreeTime(bestWorker.getNextFreeTime() + duration);
+            heap.add(bestWorker);
         }
         return output;
     }
