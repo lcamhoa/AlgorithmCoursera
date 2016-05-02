@@ -7,6 +7,53 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 public class JobQueue {
+    
+    class JobQueueWorker {
+        int index;
+        long nextFreeTime;
+        
+        void siftDown(int i) {
+            int minIndex = i;
+            final int leftChildIndex = 2*i + 1;
+            if (leftChildIndex < data.size() && data.get(leftChildIndex) < data.get(minIndex)) {
+                minIndex = leftChildIndex;
+            }
+            final int rightChildIndex = 2*i + 2;
+            if (rightChildIndex < data.size() && data.get(rightChildIndex) < data.get(minIndex)) {
+                minIndex = rightChildIndex;
+            }
+            if (i != minIndex) {
+                Collections.swap(data, i, minIndex);
+                siftDown(data, minIndex);
+            }
+        }
+
+        void siftUp(int i) {
+            while (i > 0 && data.get((i-1)/2) < data.get(i)) {
+                Collections.swap(data, i, (i-1)/2);
+                i = (i-1)/2;
+            }
+        }
+
+    //    private static int extractMin(ArrayList<Integer> data) {
+    //        int max = data.get(0);
+    //        Collections.swap(data, 0, data.size()-1);
+    //        data.remove(data.size()-1);
+    //        siftDown(data, 0);
+    //        return max;
+    //    }
+
+        void changePriority(int i, int newPriority) {
+            int oldPriority = data.get(i);
+            data.set(i, newPriority);
+            if (oldPriority < newPriority) {
+                siftUp(i);
+            } else {
+                siftDown(i);
+            }
+        }
+            
+    }
 
     public static void main(String[] args) throws IOException {
         // Get input
@@ -26,47 +73,6 @@ public class JobQueue {
         }
     }
 
-    private static void siftDown(ArrayList<Integer> data, int i) {
-        int minIndex = i;
-        final int leftChildIndex = 2*i + 1;
-        if (leftChildIndex < data.size() && data.get(leftChildIndex) < data.get(minIndex)) {
-            minIndex = leftChildIndex;
-        }
-        final int rightChildIndex = 2*i + 2;
-        if (rightChildIndex < data.size() && data.get(rightChildIndex) < data.get(minIndex)) {
-            minIndex = rightChildIndex;
-        }
-        if (i != minIndex) {
-            Collections.swap(data, i, minIndex);
-            siftDown(data, minIndex);
-        }
-    }
-
-    private static void siftUp(ArrayList<Integer> data, int i) {
-        while (i > 0 && data.get((i-1)/2) < data.get(i)) {
-            Collections.swap(data, i, (i-1)/2);
-            i = (i-1)/2;
-        }
-    }
-    
-//    private static int extractMin(ArrayList<Integer> data) {
-//        int max = data.get(0);
-//        Collections.swap(data, 0, data.size()-1);
-//        data.remove(data.size()-1);
-//        siftDown(data, 0);
-//        return max;
-//    }
-
-    private static void changePriority(ArrayList<Integer> data, int i, int newPriority) {
-        int oldPriority = data.get(i);
-        data.set(i, newPriority);
-        if (oldPriority < newPriority) {
-            siftUp(data, i);
-        } else {
-            siftDown(data, i);
-        }
-    }
-    
     static LinkedHashMap<Integer, Long> assignJobs(int numWorkers, List<Integer> jobs) {
         final LinkedHashMap<Integer, Long> output = new LinkedHashMap<>(jobs.size());
         final long[] nextFreeTime = new long[numWorkers];
