@@ -1,63 +1,62 @@
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
 public class BuildHeap {
-    private int[] data;
-    private List<Swap> swaps;
-
-    private FastScanner in;
-    private PrintWriter out;
 
     public static void main(String[] args) throws IOException {
-        new BuildHeap().solve();
+        int[] data = readData();
+        List<Swap> swaps = generateSwaps(data);
+        writeResponse(swaps);
     }
 
-    private void readData() throws IOException {
+    private static int[] readData() throws IOException {
+        FastScanner in = new FastScanner();
         int n = in.nextInt();
-        data = new int[n];
+        int[] data = new int[n];
         for (int i = 0; i < n; ++i) {
           data[i] = in.nextInt();
         }
+        return data;
     }
 
-    private void writeResponse() {
-        out.println(swaps.size());
+    private static void writeResponse(List<Swap> swaps) {
+        System.out.println(swaps.size());
         for (Swap swap : swaps) {
-          out.println(swap.index1 + " " + swap.index2);
+          System.out.println(swap.index1 + " " + swap.index2);
         }
     }
 
-    private void generateSwaps() {
-      swaps = new ArrayList<Swap>();
-      // The following naive implementation just sorts 
-      // the given sequence using selection sort algorithm
-      // and saves the resulting sequence of swaps.
-      // This turns the given array into a heap, 
-      // but in the worst case gives a quadratic number of swaps.
-      //
-      // TODO: replace by a more efficient implementation
-      for (int i = 0; i < data.length; ++i) {
-        for (int j = i + 1; j < data.length; ++j) {
-          if (data[i] > data[j]) {
-            swaps.add(new Swap(i, j));
-            int tmp = data[i];
-            data[i] = data[j];
-            data[j] = tmp;
-          }
-        }
+    static List<Swap> generateSwaps(int[] data) {
+      List<Swap> swaps = new ArrayList<>();
+      for (int i = data.length/2 -1; i >= 0; i--) {
+        List<Swap> siftSwaps = siftDown(data, i);
+        swaps.addAll(siftSwaps);
       }
+      return swaps;
     }
 
-    public void solve() throws IOException {
-        in = new FastScanner();
-        out = new PrintWriter(new BufferedOutputStream(System.out));
-        readData();
-        generateSwaps();
-        writeResponse();
-        out.close();
+    private static List<Swap> siftDown(int[] data, int i) {
+        int minIndex = i;
+        final List<Swap> swaps = new ArrayList<>();
+        final int leftChildIndex = 2*i + 1;
+        if (leftChildIndex < data.length && data[leftChildIndex] < data[minIndex]) {
+            minIndex = leftChildIndex;
+        }
+        final int rightChildIndex = 2*i + 2;
+        if (rightChildIndex < data.length && data[rightChildIndex] < data[minIndex]) {
+            minIndex = rightChildIndex;
+        }
+        if (i != minIndex) {
+            int temp = data[minIndex];
+            data[minIndex] = data[i];
+            data[i] = temp;
+            swaps.add(new Swap(i, minIndex));
+            List<Swap> siftSwaps = siftDown(data, minIndex);
+            swaps.addAll(siftSwaps);
+        }
+        return swaps;
     }
 
     static class Swap {
@@ -67,6 +66,20 @@ public class BuildHeap {
         public Swap(int index1, int index2) {
             this.index1 = index1;
             this.index2 = index2;
+        }
+        @Override
+        public String toString() {
+            return "(" + index1 + ", " + index2 + ")";
+	}
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof Swap) {
+                Swap s = (Swap)o;
+                if (s.index1 == index1 && s.index2 == index2) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

@@ -1,63 +1,88 @@
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 public class JobQueue {
-    private int numWorkers;
-    private int[] jobs;
-
-    private int[] assignedWorker;
-    private long[] startTime;
-
-    private FastScanner in;
-    private PrintWriter out;
 
     public static void main(String[] args) throws IOException {
-        new JobQueue().solve();
-    }
-
-    private void readData() throws IOException {
-        numWorkers = in.nextInt();
+        // Get input
+        final FastScanner in = new FastScanner();
+        int numWorkers = in.nextInt();
         int m = in.nextInt();
-        jobs = new int[m];
+        List<Integer> jobs = new ArrayList<>(m);
         for (int i = 0; i < m; ++i) {
-            jobs[i] = in.nextInt();
+            jobs.add(in.nextInt());
+        }
+        
+        LinkedHashMap<Integer, Long> output = assignJobs(numWorkers, jobs);
+        
+        // Print
+        for (Map.Entry<Integer, Long> entry : output.entrySet()) {
+            System.out.println(entry.getKey() + " " + entry.getValue());
         }
     }
 
-    private void writeResponse() {
-        for (int i = 0; i < jobs.length; ++i) {
-            out.println(assignedWorker[i] + " " + startTime[i]);
+    private static void siftDown(ArrayList<Integer> data, int i) {
+        int minIndex = i;
+        final int leftChildIndex = 2*i + 1;
+        if (leftChildIndex < data.size() && data.get(leftChildIndex) < data.get(minIndex)) {
+            minIndex = leftChildIndex;
+        }
+        final int rightChildIndex = 2*i + 2;
+        if (rightChildIndex < data.size() && data.get(rightChildIndex) < data.get(minIndex)) {
+            minIndex = rightChildIndex;
+        }
+        if (i != minIndex) {
+            Collections.swap(data, i, minIndex);
+            siftDown(data, minIndex);
         }
     }
 
-    private void assignJobs() {
-        // TODO: replace this code with a faster algorithm.
-        assignedWorker = new int[jobs.length];
-        startTime = new long[jobs.length];
-        long[] nextFreeTime = new long[numWorkers];
-        for (int i = 0; i < jobs.length; i++) {
-            int duration = jobs[i];
+    private static void siftUp(ArrayList<Integer> data, int i) {
+        while (i > 0 && data.get((i-1)/2) < data.get(i)) {
+            Collections.swap(data, i, (i-1)/2);
+            i = (i-1)/2;
+        }
+    }
+    
+//    private static int extractMin(ArrayList<Integer> data) {
+//        int max = data.get(0);
+//        Collections.swap(data, 0, data.size()-1);
+//        data.remove(data.size()-1);
+//        siftDown(data, 0);
+//        return max;
+//    }
+
+    private static void changePriority(ArrayList<Integer> data, int i, int newPriority) {
+        int oldPriority = data.get(i);
+        data.set(i, newPriority);
+        if (oldPriority < newPriority) {
+            siftUp(data, i);
+        } else {
+            siftDown(data, i);
+        }
+    }
+    
+    static LinkedHashMap<Integer, Long> assignJobs(int numWorkers, List<Integer> jobs) {
+        final LinkedHashMap<Integer, Long> output = new LinkedHashMap<>(jobs.size());
+        final long[] nextFreeTime = new long[numWorkers];
+        for (Integer duration : jobs) {
             int bestWorker = 0;
             for (int j = 0; j < numWorkers; ++j) {
                 if (nextFreeTime[j] < nextFreeTime[bestWorker])
                     bestWorker = j;
             }
-            assignedWorker[i] = bestWorker;
-            startTime[i] = nextFreeTime[bestWorker];
+            output.put(bestWorker, nextFreeTime[bestWorker]);
             nextFreeTime[bestWorker] += duration;
         }
+        return output;
     }
 
-    public void solve() throws IOException {
-        in = new FastScanner();
-        out = new PrintWriter(new BufferedOutputStream(System.out));
-        readData();
-        assignJobs();
-        writeResponse();
-        out.close();
-    }
-
-    static class FastScanner {
+    private static class FastScanner {
         private BufferedReader reader;
         private StringTokenizer tokenizer;
 

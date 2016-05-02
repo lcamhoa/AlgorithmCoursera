@@ -4,16 +4,13 @@ public class FractionalKnapsack {
     static double getOptimalValue(int capacity, int[] values, int[] weights) {
         double value = 0;
         final int n = values.length;
-        for (int i = 0; i < n; i++) {
-            if (capacity == 0) {
-                return value;
-            }
+        for (int i = 0; i < n && capacity != 0; i++) {
             int bestOne = findBest(values, weights);
             if (bestOne == -1) { // no solution found
                 return -1;
             }
             int weightOfItem = Math.min(weights[bestOne], capacity);
-            value += ((double)weightOfItem * values[bestOne]) / weights[bestOne];
+            value += weightOfItem * ((double)values[bestOne]/weights[bestOne]);
             capacity -= weightOfItem;
             weights[bestOne] -= weightOfItem;
         }
@@ -39,9 +36,9 @@ public class FractionalKnapsack {
         double bestValueForWeight = -1;
         final int n = values.length;
         for (int i = 0; i < n; i++) {
-            if (weights[i] > 0 && values[i] / weights[i] > bestValueForWeight) {
+            if (weights[i] > 0 && ((double)values[i] / weights[i]) > bestValueForWeight) {
                 bestOne = i;
-                bestValueForWeight = values[i] / weights[i];
+                bestValueForWeight = ((double)values[i] / weights[i]);
             }
         }
         return bestOne;

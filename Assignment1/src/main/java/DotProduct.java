@@ -12,7 +12,7 @@ public class DotProduct {
             b[i] = temp;
         }
         for (int i = 0; i < a.length; i++) {
-            result += a[i] * b[i];
+            result += (long)a[i] * b[i];
         }
         return result;
     }
