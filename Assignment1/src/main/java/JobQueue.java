@@ -5,12 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 
 public class JobQueue {
     
     static class JobQueueWorker implements Comparable<JobQueueWorker> {
-        private int index;
+        private final int index;
         private long nextFreeTime;
 
         public JobQueueWorker(int index, long nextFreeTime) {
@@ -32,12 +31,28 @@ public class JobQueue {
 
         @Override
         public int compareTo(JobQueueWorker t) {
-            int freeTimeCompareResult = Long.compare(nextFreeTime, t.getNextFreeTime());
-            if (freeTimeCompareResult == 0) {
-                return Integer.compare(index, t.getIndex());
-            } else {
-                return freeTimeCompareResult;
+            int compareResult = Long.compare(nextFreeTime, t.getNextFreeTime());
+            if (compareResult == 0) {
+                compareResult = Integer.compare(index, t.getIndex());
             }
+            return compareResult;
+        }
+        
+    }
+
+    private static void siftDown(ArrayList<JobQueueWorker> data, int i) {
+        int minIndex = i;
+        final int leftChildIndex = 2*i + 1;
+        if (leftChildIndex < data.size() && data.get(leftChildIndex).compareTo(data.get(minIndex)) < 0) {
+            minIndex = leftChildIndex;
+        }
+        final int rightChildIndex = 2*i + 2;
+        if (rightChildIndex < data.size() && data.get(rightChildIndex).compareTo(data.get(minIndex)) < 0) {
+            minIndex = rightChildIndex;
+        }
+        if (i != minIndex) {
+            Collections.swap(data, i, minIndex);
+            siftDown(data, minIndex);
         }
     }
 
@@ -61,19 +76,15 @@ public class JobQueue {
 
     static LinkedHashMap<Integer, Long> assignJobs(int numWorkers, List<Integer> jobs) {
         final LinkedHashMap<Integer, Long> output = new LinkedHashMap<>(jobs.size());
-        
-        final TreeSet<JobQueueWorker> heap = new TreeSet<>();
-        // Add all the workers initially
+        final ArrayList<JobQueueWorker> workersHeap = new ArrayList<>(numWorkers);
         for (int j = 0; j < numWorkers; ++j) {
-            heap.add(new JobQueueWorker(j, 0));
+            workersHeap.add(new JobQueueWorker(j, 0));
         }
         for (Integer duration : jobs) {
-            JobQueueWorker bestWorker = heap.first();
+            JobQueueWorker bestWorker = workersHeap.get(0);
             output.put(bestWorker.getIndex(), bestWorker.getNextFreeTime());
-            // Update the heap
-            heap.remove(bestWorker);
             bestWorker.setNextFreeTime(bestWorker.getNextFreeTime() + duration);
-            heap.add(bestWorker);
+            siftDown(workersHeap, 0);
         }
         return output;
     }
