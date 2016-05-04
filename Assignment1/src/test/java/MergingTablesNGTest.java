@@ -23,19 +23,19 @@ public class MergingTablesNGTest {
                 .mapToObj(i -> new MergingTables.Table(i)).collect(Collectors.toList());
 
         tables.get(2).merge(tables.get(4));
-        assertEquals(tables.get(2).getParent().getNumberOfRows(), 2);
+        assertEquals(MergingTables.Table.getMaximumNumberOfRows(), 2);
 
         tables.get(1).merge(tables.get(3));
-        assertEquals(tables.get(1).getParent().getNumberOfRows(), 2);
+        assertEquals(MergingTables.Table.getMaximumNumberOfRows(), 2);
 
         tables.get(0).merge(tables.get(3));
-        assertEquals(tables.get(0).getParent().getNumberOfRows(), 3);
+        assertEquals(MergingTables.Table.getMaximumNumberOfRows(), 3);
 
         tables.get(4).merge(tables.get(3));
-        assertEquals(tables.get(4).getParent().getNumberOfRows(), 5);
+        assertEquals(MergingTables.Table.getMaximumNumberOfRows(), 5);
 
         tables.get(4).merge(tables.get(2));
-        assertEquals(tables.get(4).getParent().getNumberOfRows(), 5);
+        assertEquals(MergingTables.Table.getMaximumNumberOfRows(), 5);
     }
     
 }

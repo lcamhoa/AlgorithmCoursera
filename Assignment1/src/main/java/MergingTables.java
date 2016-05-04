@@ -8,35 +8,39 @@ public class MergingTables {
         int n = reader.nextInt();
         int m = reader.nextInt();
         Table[] tables = new Table[n];
-        int maximumNumberOfRows = -1;
         for (int i = 0; i < n; i++) {
             int numberOfRows = reader.nextInt();
             tables[i] = new Table(numberOfRows);
-            maximumNumberOfRows = Math.max(maximumNumberOfRows, numberOfRows);
         }
         for (int i = 0; i < m; i++) {
             int destination = reader.nextInt() - 1;
             int source = reader.nextInt() - 1;
             tables[destination].merge(tables[source]);
-            int numberOfRows = tables[destination].getParent().getNumberOfRows();
-            maximumNumberOfRows = Math.max(maximumNumberOfRows, numberOfRows);
-            System.out.printf("%d\n", maximumNumberOfRows);
+            System.out.printf("%d\n", Table.getMaximumNumberOfRows());
         }
     }
 
     static class Table {
+        private static int maximumNumberOfRows = -1;
+
+        public static int getMaximumNumberOfRows() {
+            return maximumNumberOfRows;
+        }
         private Table parent;
         private int rank;
         private int numberOfRows;
-
-        public int getNumberOfRows() {
-            return numberOfRows;
-        }
 
         Table(int numberOfRows) {
             this.numberOfRows = numberOfRows;
             rank = 0;
             parent = this;
+            if (numberOfRows > maximumNumberOfRows) {
+                maximumNumberOfRows = numberOfRows;
+            }
+        }
+
+        public int getNumberOfRows() {
+            return numberOfRows;
         }
 
         Table getParent() {
@@ -66,6 +70,9 @@ public class MergingTables {
             }
             realDestination.numberOfRows += realSource.numberOfRows;
             realSource.numberOfRows = 0;
+            if (realDestination.numberOfRows > maximumNumberOfRows) {
+                maximumNumberOfRows = realDestination.numberOfRows;
+            }
         }
 
     }
