@@ -1,57 +1,14 @@
 import java.io.*;
-import java.util.Arrays;
-import java.util.Locale;
 import java.util.StringTokenizer;
 
 public class MergingTables {
-    private final InputReader reader;
-    private final OutputWriter writer;
-
-    public MergingTables(InputReader reader, OutputWriter writer) {
-        this.reader = reader;
-        this.writer = writer;
-    }
 
     public static void main(String[] args) {
-        InputReader reader = new InputReader(System.in);
-        OutputWriter writer = new OutputWriter(System.out);
-        new MergingTables(reader, writer).run();
-        writer.writer.flush();
-    }
-
-    class Table {
-        Table parent;
-        int rank;
-        int numberOfRows;
-
-        Table(int numberOfRows) {
-            this.numberOfRows = numberOfRows;
-            rank = 0;
-            parent = this;
-        }
-        Table getParent() {
-            // find super parent and compress path
-            return parent;
-        }
-    }
-
-    int maximumNumberOfRows = -1;
-
-    void merge(Table destination, Table source) {
-        Table realDestination = destination.getParent();
-        Table realSource = source.getParent();
-        if (realDestination == realSource) {
-            return;
-        }
-        // merge two components here
-        // use rank heuristic
-        // update maximumNumberOfRows
-    }
-
-    public void run() {
+        InputReader reader = new InputReader();
         int n = reader.nextInt();
         int m = reader.nextInt();
         Table[] tables = new Table[n];
+        int maximumNumberOfRows = -1;
         for (int i = 0; i < n; i++) {
             int numberOfRows = reader.nextInt();
             tables[i] = new Table(numberOfRows);
@@ -60,18 +17,65 @@ public class MergingTables {
         for (int i = 0; i < m; i++) {
             int destination = reader.nextInt() - 1;
             int source = reader.nextInt() - 1;
-            merge(tables[destination], tables[source]);
-            writer.printf("%d\n", maximumNumberOfRows);
+            tables[destination].merge(tables[source]);
+            int numberOfRows = tables[destination].getParent().getNumberOfRows();
+            maximumNumberOfRows = Math.max(maximumNumberOfRows, numberOfRows);
+            System.out.printf("%d\n", maximumNumberOfRows);
         }
     }
 
+    static class Table {
+        private Table parent;
+        private int rank;
+        private int numberOfRows;
 
-    static class InputReader {
+        public int getNumberOfRows() {
+            return numberOfRows;
+        }
+
+        Table(int numberOfRows) {
+            this.numberOfRows = numberOfRows;
+            rank = 0;
+            parent = this;
+        }
+
+        Table getParent() {
+            // find super parent and compress path
+            if (parent != this) {
+                parent = parent.getParent();
+            }
+            return parent;
+        }
+
+        public void merge(Table source) {
+            Table realDestination = getParent();
+            Table realSource = source.getParent();
+            if (realDestination == realSource) {
+                return;
+            }
+            // merge two components here
+            // use rank heuristic
+            // update maximumNumberOfRows
+            if (realDestination.rank > realSource.rank) {
+                realSource.parent = realDestination;
+            } else {
+                realDestination.parent = realSource;
+                if (realSource.rank == realDestination.rank) {
+                    realSource.rank += 1;
+                }
+            }
+            realDestination.numberOfRows += realSource.numberOfRows;
+            realSource.numberOfRows = 0;
+        }
+
+    }
+
+    private static class InputReader {
         public BufferedReader reader;
         public StringTokenizer tokenizer;
 
-        public InputReader(InputStream stream) {
-            reader = new BufferedReader(new InputStreamReader(stream), 32768);
+        public InputReader() {
+            reader = new BufferedReader(new InputStreamReader(System.in), 32768);
             tokenizer = null;
         }
 
@@ -99,15 +103,4 @@ public class MergingTables {
         }
     }
 
-    static class OutputWriter {
-        public PrintWriter writer;
-
-        OutputWriter(OutputStream stream) {
-            writer = new PrintWriter(stream);
-        }
-
-        public void printf(String format, Object... args) {
-            writer.print(String.format(Locale.ENGLISH, format, args));
-        }
-    }
 }
