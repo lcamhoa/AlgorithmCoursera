@@ -24,11 +24,11 @@ public class MergingTables {
     }
 
     public static class Table {
-        static int maximumNumberOfRows = -1;
+        static long maximumNumberOfRows = -1;
 
         private Table parent;
         private int rank;
-        private int numberOfRows;
+        private long numberOfRows;
 
         public Table(int numberOfRows) {
             this.numberOfRows = numberOfRows;
