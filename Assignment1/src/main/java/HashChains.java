@@ -1,22 +1,37 @@
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
 public class HashChains {
 
-    private FastScanner in;
-    private PrintWriter out;
-    // store all strings in one list
-    private List<String> elems;
     // for hash function
-    private int bucketCount;
-    private int prime = 1000000007;
-    private int multiplier = 263;
+    private final int bucketCount;
+    private final List<List<String>> elems;
+    
+    static final private int prime = 1000000007;
+    static final private int multiplier = 263;
 
     public static void main(String[] args) throws IOException {
-        new HashChains().processQueries();
+        FastScanner in = new FastScanner();
+        int bucketCount = in.nextInt();
+        int queryCount = in.nextInt();
+        HashChains hashChains = new HashChains(bucketCount);
+        try (PrintWriter out = new PrintWriter(new BufferedOutputStream(System.out))) {
+            for (int i = 0; i < queryCount; ++i) {
+                hashChains.processQuery(hashChains.readQuery(in), out);
+            }
+        }
+    }
+
+    private HashChains(int bucketCount) {
+        this.bucketCount = bucketCount;
+        this.elems = new ArrayList<>(bucketCount);
+        for (int i = 0; i < bucketCount; i++) {
+            elems.add(null);
+        }
     }
 
     private int hashFunc(String s) {
@@ -26,7 +41,7 @@ public class HashChains {
         return (int)hash % bucketCount;
     }
 
-    private Query readQuery() throws IOException {
+    private Query readQuery(FastScanner in) throws IOException {
         String type = in.next();
         if (!type.equals("check")) {
             String s = in.next();
@@ -37,48 +52,53 @@ public class HashChains {
         }
     }
 
-    private void writeSearchResult(boolean wasFound) {
-        out.println(wasFound ? "yes" : "no");
-        // Uncomment the following if you want to play with the program interactively.
-        // out.flush();
-    }
-
-    private void processQuery(Query query) {
+    private void processQuery(Query query, PrintWriter out) {
         switch (query.type) {
-            case "add":
-                if (!elems.contains(query.s))
-                    elems.add(0, query.s);
+            case "add": 
+            {
+                int hash = hashFunc(query.s);
+                List<String> chain = elems.get(hash);
+                if (chain == null) {
+                    chain = new ArrayList<>();
+                    chain.add(query.s);
+                    elems.set(hash, chain);
+                } else if (!chain.contains(query.s)) {
+                    chain.add(0, query.s);
+                }
+            }
                 break;
             case "del":
-                if (elems.contains(query.s))
-                    elems.remove(query.s);
+            {
+                int hash = hashFunc(query.s);
+                List<String> chain = elems.get(hash);
+                if (chain != null) {
+                    chain.remove(query.s);
+                }
+            }
                 break;
             case "find":
-                writeSearchResult(elems.contains(query.s));
+            {
+                int hash = hashFunc(query.s);
+                List<String> chain = elems.get(hash);
+                out.println(chain != null && chain.contains(query.s) ? "yes" : "no");
+            }
                 break;
             case "check":
-                for (String cur : elems)
-                    if (hashFunc(cur) == query.ind)
+            {
+                List<String> chain = elems.get(query.ind);
+                if (chain != null) {
+                    for (String cur : chain) {
                         out.print(cur + " ");
+                    }
+                }
                 out.println();
                 // Uncomment the following if you want to play with the program interactively.
                 // out.flush();
+            }
                 break;
             default:
                 throw new RuntimeException("Unknown query: " + query.type);
         }
-    }
-
-    public void processQueries() throws IOException {
-        elems = new ArrayList<>();
-        in = new FastScanner();
-        out = new PrintWriter(new BufferedOutputStream(System.out));
-        bucketCount = in.nextInt();
-        int queryCount = in.nextInt();
-        for (int i = 0; i < queryCount; ++i) {
-            processQuery(readQuery());
-        }
-        out.close();
     }
 
     static class Query {
