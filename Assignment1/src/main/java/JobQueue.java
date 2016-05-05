@@ -1,9 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 public class JobQueue {
@@ -17,26 +15,54 @@ public class JobQueue {
             this.nextFreeTime = nextFreeTime;
         }
 
-        public void setNextFreeTime(long nextFreeTime) {
-            this.nextFreeTime = nextFreeTime;
-        }
-
-        public int getIndex() {
-            return index;
-        }
-
-        public long getNextFreeTime() {
-            return nextFreeTime;
-        }
-
         @Override
         public int compareTo(JobQueueWorker t) {
-            int compareResult = Long.compare(nextFreeTime, t.getNextFreeTime());
+            int compareResult = Long.compare(nextFreeTime, t.nextFreeTime);
             if (compareResult == 0) {
-                compareResult = Integer.compare(index, t.getIndex());
+                compareResult = Integer.compare(index, t.index);
             }
             return compareResult;
         }
+        
+    }
+    
+    static class IntLongPair {
+
+        public IntLongPair(int first, long second) {
+            this.first = first;
+            this.second = second;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 41 * hash + this.first;
+            hash = 41 * hash + (int) (this.second ^ (this.second >>> 32));
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final IntLongPair other = (IntLongPair) obj;
+            if (this.first != other.first) {
+                return false;
+            }
+            if (this.second != other.second) {
+                return false;
+            }
+            return true;
+        }
+        int first;
+        long second;
         
     }
 
@@ -66,24 +92,24 @@ public class JobQueue {
             jobs.add(in.nextInt());
         }
         
-        LinkedHashMap<Integer, Long> output = assignJobs(numWorkers, jobs);
+        ArrayList<IntLongPair> output = assignJobs(numWorkers, jobs);
         
         // Print
-        for (Map.Entry<Integer, Long> entry : output.entrySet()) {
-            System.out.println(entry.getKey() + " " + entry.getValue());
+        for (IntLongPair entry : output) {
+            System.out.println(entry.first + " " + entry.second);
         }
     }
 
-    static LinkedHashMap<Integer, Long> assignJobs(int numWorkers, List<Integer> jobs) {
-        final LinkedHashMap<Integer, Long> output = new LinkedHashMap<>(jobs.size());
+    static ArrayList<IntLongPair> assignJobs(int numWorkers, List<Integer> jobs) {
+        final ArrayList<IntLongPair> output = new ArrayList<>(jobs.size());
         final ArrayList<JobQueueWorker> workersHeap = new ArrayList<>(numWorkers);
         for (int j = 0; j < numWorkers; ++j) {
             workersHeap.add(new JobQueueWorker(j, 0));
         }
         for (Integer duration : jobs) {
             JobQueueWorker bestWorker = workersHeap.get(0);
-            output.put(bestWorker.getIndex(), bestWorker.getNextFreeTime());
-            bestWorker.setNextFreeTime(bestWorker.getNextFreeTime() + duration);
+            output.add(new IntLongPair(bestWorker.index, bestWorker.nextFreeTime));
+            bestWorker.nextFreeTime += duration;
             siftDown(workersHeap, 0);
         }
         return output;

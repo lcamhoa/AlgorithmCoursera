@@ -4,6 +4,7 @@ import java.util.StringTokenizer;
 public class MergingTables {
 
     public static void main(String[] args) {
+        Table.maximumNumberOfRows = -1;
         InputReader reader = new InputReader();
         int n = reader.nextInt();
         int m = reader.nextInt();
@@ -12,25 +13,24 @@ public class MergingTables {
             int numberOfRows = reader.nextInt();
             tables[i] = new Table(numberOfRows);
         }
+        PrintWriter writer = new PrintWriter(System.out);
         for (int i = 0; i < m; i++) {
             int destination = reader.nextInt() - 1;
             int source = reader.nextInt() - 1;
             tables[destination].merge(tables[source]);
-            System.out.printf("%d\n", Table.getMaximumNumberOfRows());
+            writer.print(String.valueOf(Table.maximumNumberOfRows) + "\n");
         }
+        writer.flush();
     }
 
-    static class Table {
-        private static int maximumNumberOfRows = -1;
+    public static class Table {
+        static int maximumNumberOfRows = -1;
 
-        public static int getMaximumNumberOfRows() {
-            return maximumNumberOfRows;
-        }
         private Table parent;
         private int rank;
         private int numberOfRows;
 
-        Table(int numberOfRows) {
+        public Table(int numberOfRows) {
             this.numberOfRows = numberOfRows;
             rank = 0;
             parent = this;
@@ -39,11 +39,7 @@ public class MergingTables {
             }
         }
 
-        public int getNumberOfRows() {
-            return numberOfRows;
-        }
-
-        Table getParent() {
+        public Table getParent() {
             // find super parent and compress path
             if (parent != this) {
                 parent = parent.getParent();
@@ -60,10 +56,10 @@ public class MergingTables {
             // merge two components here
             // use rank heuristic
             // update maximumNumberOfRows
-            if (realDestination.rank > realSource.rank) {
-                realSource.parent = realDestination;
-            } else {
+            if (realDestination.rank < realSource.rank) {
                 realDestination.parent = realSource;
+            } else {
+                realSource.parent = realDestination;
                 if (realSource.rank == realDestination.rank) {
                     realSource.rank += 1;
                 }
