@@ -1,5 +1,4 @@
 import java.io.*;
-import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 public class MergingTables {
@@ -84,15 +83,18 @@ public class MergingTables {
             // update maximumNumberOfRows
             if (realDestination.rank < realSource.rank) {
                 realDestination.parent = realSource;
+                realSource.numberOfRows += realDestination.numberOfRows;
+                realDestination.numberOfRows = -1;
+                return realSource.numberOfRows;
             } else {
                 realSource.parent = realDestination;
                 if (realSource.rank == realDestination.rank) {
-                    realSource.rank += 1;
+                    realDestination.rank += 1;
                 }
+                realDestination.numberOfRows += realSource.numberOfRows;
+                realSource.numberOfRows = -1;
+                return realDestination.numberOfRows;
             }
-            realDestination.numberOfRows += realSource.numberOfRows;
-            realSource.numberOfRows = -1;
-            return realDestination.numberOfRows;
         }
 
     }
