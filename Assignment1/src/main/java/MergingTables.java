@@ -1,42 +1,68 @@
 import java.io.*;
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 public class MergingTables {
 
+    private long maximumNumberOfRows = -1;
+    private Table[] tables;
+
+    void createTables(int[] numberOfRows) {
+        int n = numberOfRows.length;
+        tables = new Table[n];
+        for (int i = 0; i < n; i++) {
+            tables[i] = new Table(numberOfRows[i]);
+            if (numberOfRows[i] > maximumNumberOfRows) {
+                maximumNumberOfRows = numberOfRows[i];
+            }
+        }
+    }
+
+    long[] doMerges(int[] merges) {
+        int m = merges.length;
+        long[] maxSizes = new long[m/2];
+        for (int i = 0; i < m; i += 2) {
+            long destinationSize = Table.merge(tables[merges[i] - 1], tables[merges[i + 1] - 1]);
+            if (destinationSize > maximumNumberOfRows)
+                maximumNumberOfRows = destinationSize;
+            maxSizes[i/2] = maximumNumberOfRows;
+        }
+        return maxSizes;
+    }
+
+
     public static void main(String[] args) {
-        Table.maximumNumberOfRows = -1;
         InputReader reader = new InputReader();
         int n = reader.nextInt();
         int m = reader.nextInt();
-        Table[] tables = new Table[n];
+        int[] numberOfRows = new int[n];
         for (int i = 0; i < n; i++) {
-            int numberOfRows = reader.nextInt();
-            tables[i] = new Table(numberOfRows);
+            numberOfRows[i] = reader.nextInt();
         }
+        int[] merges = new int[m*2];
         PrintWriter writer = new PrintWriter(System.out);
         for (int i = 0; i < m; i++) {
-            int destination = reader.nextInt() - 1;
-            int source = reader.nextInt() - 1;
-            tables[destination].merge(tables[source]);
-            writer.print(String.valueOf(Table.maximumNumberOfRows) + "\n");
+            merges[i*2] = reader.nextInt();
+            merges[i*2+1] = reader.nextInt();
+        }
+        MergingTables mergingTables = new MergingTables();
+        mergingTables.createTables(numberOfRows);
+        long[] maxSizes = mergingTables.doMerges(merges);
+        for (long maxSize : maxSizes) {
+            writer.print(String.valueOf(maxSize) + "\n");
         }
         writer.flush();
     }
 
-    public static class Table {
-        static long maximumNumberOfRows = -1;
-
+    private static class Table {
         private Table parent;
         private int rank;
         private long numberOfRows;
 
-        public Table(int numberOfRows) {
+        private Table(int numberOfRows) {
             this.numberOfRows = numberOfRows;
             rank = 0;
             parent = this;
-            if (numberOfRows > maximumNumberOfRows) {
-                maximumNumberOfRows = numberOfRows;
-            }
         }
 
         public Table getParent() {
@@ -47,11 +73,11 @@ public class MergingTables {
             return parent;
         }
 
-        public void merge(Table source) {
-            Table realDestination = getParent();
+        static long merge(Table destination, Table source) {
+            Table realDestination = destination.getParent();
             Table realSource = source.getParent();
             if (realDestination == realSource) {
-                return;
+                return 0;
             }
             // merge two components here
             // use rank heuristic
@@ -65,10 +91,8 @@ public class MergingTables {
                 }
             }
             realDestination.numberOfRows += realSource.numberOfRows;
-            realSource.numberOfRows = 0;
-            if (realDestination.numberOfRows > maximumNumberOfRows) {
-                maximumNumberOfRows = realDestination.numberOfRows;
-            }
+            realSource.numberOfRows = -1;
+            return realDestination.numberOfRows;
         }
 
     }

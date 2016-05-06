@@ -18,42 +18,38 @@ public class MergingTablesNGTest {
     
     @Test
     public void testMerge_5() {
-        List<MergingTables.Table> tables = IntStream.of(1, 1, 1, 1, 1)
-                .mapToObj(i -> new MergingTables.Table(i)).collect(Collectors.toList());
+        int[] numberOfRows = {1, 1, 1, 1, 1};
+        int[] merges = {3, 5, 2, 4, 1, 4, 5, 4, 5, 3};
 
-        tables.get(2).merge(tables.get(4));
-        assertEquals(MergingTables.Table.maximumNumberOfRows, 2);
-
-        tables.get(1).merge(tables.get(3));
-        assertEquals(MergingTables.Table.maximumNumberOfRows, 2);
-
-        tables.get(0).merge(tables.get(3));
-        assertEquals(MergingTables.Table.maximumNumberOfRows, 3);
-
-        tables.get(4).merge(tables.get(3));
-        assertEquals(MergingTables.Table.maximumNumberOfRows, 5);
-
-        tables.get(4).merge(tables.get(2));
-        assertEquals(MergingTables.Table.maximumNumberOfRows, 5);
+        MergingTables mergingTables = new MergingTables();
+        mergingTables.createTables(numberOfRows);
+        long[] maxSizes = mergingTables.doMerges(merges);
+        long[] expectedMaxSizes = {2, 2, 3, 5, 5};
+        assertEquals(maxSizes, expectedMaxSizes);
     }
     
     @Test
     public void testMerge_6() {
-        List<MergingTables.Table> tables = IntStream.of(10, 0, 5, 0, 3, 3)
-                .mapToObj(i -> new MergingTables.Table(i)).collect(Collectors.toList());
+        int[] numberOfRows = {10, 0, 5, 0, 3, 3};
+        int[] merges = {6, 6, 6, 5, 5, 4, 4, 3};
 
-        tables.get(5).merge(tables.get(5));
-        assertEquals(MergingTables.Table.maximumNumberOfRows, 10);
+        MergingTables mergingTables = new MergingTables();
+        mergingTables.createTables(numberOfRows);
+        long[] maxSizes = mergingTables.doMerges(merges);
+        long[] expectedMaxSizes = {10, 10, 10, 11};
+        assertEquals(maxSizes, expectedMaxSizes);
+    }
+    
+    @Test
+    public void testMerge_6_1() {
+        int[] numberOfRows = {10, 0, 5, 0, 3, 3};
+        int[] merges = {6, 6, 6, 5, 5, 4, 4, 3, 1, 5, 1, 6};
 
-        tables.get(5).merge(tables.get(4));
-        assertEquals(MergingTables.Table.maximumNumberOfRows, 10);
-
-        tables.get(4).merge(tables.get(3));
-        assertEquals(MergingTables.Table.maximumNumberOfRows, 10);
-
-        tables.get(3).merge(tables.get(2));
-        assertEquals(MergingTables.Table.maximumNumberOfRows, 11);
-
+        MergingTables mergingTables = new MergingTables();
+        mergingTables.createTables(numberOfRows);
+        long[] maxSizes = mergingTables.doMerges(merges);
+        long[] expectedMaxSizes = {10, 10, 10, 11, 21, 21};
+        assertEquals(maxSizes, expectedMaxSizes);
     }
     
 }
