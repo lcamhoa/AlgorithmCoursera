@@ -7,4 +7,8 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
-/Assignment1/nbproject/
+Assignment1/nbproject/
+Assignment1/.classpath
+Assignment1/.project
+Assignment1/.settings/
+Assignment1/test-output/
