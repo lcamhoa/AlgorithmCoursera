@@ -136,10 +136,9 @@ public class SetRangeSum {
     private VertexPair split(Vertex root, int key) {
         VertexPair result = new VertexPair();
         VertexPair findAndRoot = find(root, key);
-        root = findAndRoot.right;
-        result.right = findAndRoot.left; // result.newRoot = node or the next highest node
+        result.right = findAndRoot.left; // result = node or the next highest node
         if (result.right == null) { // the key is larger than all values
-            result.left = root;
+            result.left = findAndRoot.right;
             return result;
         }
         result.right = splay(result.right);
@@ -182,21 +181,18 @@ public class SetRangeSum {
 
     private void erase(int x) {
         // Implement erase yourself
-        final VertexPair findAndRoot = find(root, x);
-        final Vertex next = findAndRoot.left;
-        final Vertex newRoot = findAndRoot.right;
-        if (next == null || newRoot == null || next != newRoot) {
-            return; // nothing to erase
+        VertexPair leftRight = split(root, x);
+        Vertex left = leftRight.left;
+        Vertex right = leftRight.right;
+        if (right != null && right.key == x) {
+            // We have the node as the root of the tree pointed by right.
+            // Just remove this node and join the left and its right child
+            right = right.right;
+            if (right != null) {
+                right.parent = null;
+            }
         }
-        // We have the node as the root of the tree pointed by left.
-        // Just remove this node and join its left and right children
-        Vertex rightV = newRoot.right;
-        Vertex leftV = newRoot.left;
-        if (rightV != null)
-            rightV.parent = null;
-        if (leftV != null)
-            leftV.parent = null;
-        root = merge(leftV, rightV);        
+        root = merge(left, right);
     }
 
     private boolean find(int x) {
@@ -221,38 +217,151 @@ public class SetRangeSum {
         return ans;
     }
 
+    long _sum(int x, int y) {
+//        System.out.println("+ " + x + " " + y);
+//        BTreePrinter.printNode(root);
+        long res = sum((x + last_sum_result) % MODULO, (y + last_sum_result) % MODULO);
+        last_sum_result = (int)(res % MODULO);
+        return res;
+    }
 
+    boolean _find(int x) {
+//        System.out.println("? " + x);
+//        BTreePrinter.printNode(root);
+        return find((x + last_sum_result) % MODULO);
+    }
+    
+    void _erase(int x) {
+//        System.out.println("- " + x);
+//        BTreePrinter.printNode(root);
+        erase((x + last_sum_result) % MODULO);
+    }
+    
+    void _insert(int x) {
+//        System.out.println("+ " + x);
+//        BTreePrinter.printNode(root);
+        insert((x + last_sum_result) % MODULO);
+    }
+    
     static final int MODULO = 1000000001;
+    int last_sum_result = 0;
 
     void solve(FastScanner in, PrintStream out) throws IOException {
         int n = in.nextInt();
-        int last_sum_result = 0;
         for (int i = 0; i < n; i++) {
             char type = in.nextChar();
             switch (type) {
                 case '+' : {
                     int x = in.nextInt();
-                    insert((x + last_sum_result) % MODULO);
+                    _insert(x);
                 } break;
                 case '-' : {
                     int x = in.nextInt();
-                    erase((x + last_sum_result) % MODULO);
+                    _erase(x);
                 } break;
                 case '?' : {
                     int x = in.nextInt();
-                    out.println(find((x + last_sum_result) % MODULO) ? "Found" : "Not found");
+                    out.println(_find(x) ? "Found" : "Not found");
                 } break;
                 case 's' : {
                     int l = in.nextInt();
                     int r = in.nextInt();
-                    long res = sum((l + last_sum_result) % MODULO, (r + last_sum_result) % MODULO);
+                    long res = _sum(l, r);
                     out.println(String.valueOf(res));
-                    last_sum_result = (int)(res % MODULO);
                 }
             }
         }
     }
 
+    static class BTreePrinter {
+
+        public static <T extends Comparable<?>> void printNode(Vertex root) {
+            int maxLevel = BTreePrinter.maxLevel(root);
+
+            printNodeInternal(Collections.singletonList(root), 1, maxLevel);
+        }
+
+        private static <T extends Comparable<?>> void printNodeInternal(List<Vertex> nodes, int level, int maxLevel) {
+            if (nodes.isEmpty() || BTreePrinter.isAllElementsNull(nodes))
+                return;
+
+            int floor = maxLevel - level;
+            int endgeLines = (int) Math.pow(2, (Math.max(floor - 1, 0)));
+            int firstSpaces = (int) Math.pow(2, (floor)) - 1;
+            int betweenSpaces = (int) Math.pow(2, (floor + 1)) - 1;
+
+            BTreePrinter.printWhitespaces(firstSpaces);
+
+            List<Vertex> newNodes = new ArrayList<Vertex>();
+            for (Vertex node : nodes) {
+                if (node != null) {
+                    System.out.printf("%d (sum %d) (parent %s)", 
+                            node.key, 
+                            node.sum, 
+                            node.parent == null ? "null" : String.valueOf(node.parent.key));
+                    newNodes.add(node.left);
+                    newNodes.add(node.right);
+                } else {
+                    newNodes.add(null);
+                    newNodes.add(null);
+                    System.out.print(" ");
+                }
+
+                BTreePrinter.printWhitespaces(betweenSpaces);
+            }
+            System.out.println("");
+
+            for (int i = 1; i <= endgeLines; i++) {
+                for (int j = 0; j < nodes.size(); j++) {
+                    BTreePrinter.printWhitespaces(firstSpaces - i);
+                    if (nodes.get(j) == null) {
+                        BTreePrinter.printWhitespaces(endgeLines + endgeLines + i + 1);
+                        continue;
+                    }
+
+                    if (nodes.get(j).left != null)
+                        System.out.print("/");
+                    else
+                        BTreePrinter.printWhitespaces(1);
+
+                    BTreePrinter.printWhitespaces(i + i - 1);
+
+                    if (nodes.get(j).right != null)
+                        System.out.print("\\");
+                    else
+                        BTreePrinter.printWhitespaces(1);
+
+                    BTreePrinter.printWhitespaces(endgeLines + endgeLines - i);
+                }
+
+                System.out.println("");
+            }
+
+            printNodeInternal(newNodes, level + 1, maxLevel);
+        }
+
+        private static void printWhitespaces(int count) {
+            for (int i = 0; i < count; i++)
+                System.out.print(" ");
+        }
+
+        private static <T extends Comparable<?>> int maxLevel(Vertex node) {
+            if (node == null)
+                return 0;
+
+            return Math.max(BTreePrinter.maxLevel(node.left), BTreePrinter.maxLevel(node.right)) + 1;
+        }
+
+        private static <T> boolean isAllElementsNull(List<T> list) {
+            for (Object object : list) {
+                if (object != null)
+                    return false;
+            }
+
+            return true;
+        }
+
+    }
     public static void main(String[] args) throws IOException {
         SetRangeSum setRangeSum = new SetRangeSum();
         FastScanner in = new FastScanner(System.in);

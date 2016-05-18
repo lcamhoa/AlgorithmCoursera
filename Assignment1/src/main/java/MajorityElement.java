@@ -10,7 +10,39 @@ public class MajorityElement {
             return a[left];
         }
         //write your code here
+        int middle = (left+right)/2;
+        int majorityLeft = getMajorityElement(a, left, middle);
+        int majorityRight = getMajorityElement(a, middle, right);
+        if (majorityLeft == majorityRight) {
+            return majorityLeft;
+        } else {
+            // Count which of the majority elements of the halves is a majority
+            // element
+            int majorityThreshhold = (right - left)/2;
+            if (majorityLeft > -1) {
+                int count = countOccurences(left, right, a, majorityLeft);
+                if (count > majorityThreshhold) {
+                    return majorityLeft;
+                }
+            }
+            if (majorityRight > -1) {
+                int count = countOccurences(left, right, a, majorityRight);
+                if (count > majorityThreshhold) {
+                    return majorityRight;
+                }
+            }
+        }
         return -1;
+    }
+
+    static int countOccurences(int left, int right, int[] a, int elem) {
+        int count = 0;
+        for (int i = left; i < right; i++) {
+            if (a[i] == elem) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public static void main(String[] args) {

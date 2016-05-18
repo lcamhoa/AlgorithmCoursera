@@ -2,7 +2,7 @@ import java.util.*;
 
 public class Inversions {
 
-    private static long getNumberOfInversions(int[] a, int[] b, int left, int right) {
+    static long getNumberOfInversions(int[] a, int[] b, int left, int right) {
         long numberOfInversions = 0;
         if (right <= left + 1) {
             return numberOfInversions;

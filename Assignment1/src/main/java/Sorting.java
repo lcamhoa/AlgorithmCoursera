@@ -2,16 +2,38 @@ import java.io.*;
 import java.util.*;
 
 public class Sorting {
-    private static Random random = new Random();
+    private static final Random random = new Random();
 
     private static int[] partition3(int[] a, int l, int r) {
-      //write your code here
+        //write your code here
+        int x = a[l];
+        int j = l;
+        int k = r+1;
+        for (int m = l+1; m < k; m++) {
+            if (a[m] < x) {
+                j++;
+                int t = a[m];
+                a[m] = a[j];
+                a[j] = t;
+            }
+        }
+        for (int n = r; n > j; n--) {
+            if (a[n] > x) {
+                k--;
+                int t = a[n];
+                a[n] = a[k];
+                a[k] = t;
+            }
+            
+        }
+        int t = a[l];
+        a[l] = a[j];
+        a[j] = t;
 
-
-      int m1 = l;
-      int m2 = r;
-      int[] m = {m1, m2};
-      return m;
+        int m1 = j;
+        int m2 = k;
+        int[] m = {m1, m2};
+        return m;
     }
 
     private static int partition2(int[] a, int l, int r) {
@@ -31,7 +53,7 @@ public class Sorting {
         return j;
     }
 
-    private static void randomizedQuickSort(int[] a, int l, int r) {
+    static void randomizedQuickSort(int[] a, int l, int r) {
         if (l >= r) {
             return;
         }
@@ -40,9 +62,9 @@ public class Sorting {
         a[l] = a[k];
         a[k] = t;
         //use partition3
-        int m = partition2(a, l, r);
-        randomizedQuickSort(a, l, m - 1);
-        randomizedQuickSort(a, m + 1, r);
+        int[] m = partition3(a, l, r);
+        randomizedQuickSort(a, l, m[0] - 1);
+        randomizedQuickSort(a, m[1], r);
     }
 
     public static void main(String[] args) {
